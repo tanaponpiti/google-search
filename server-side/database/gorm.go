@@ -8,7 +8,7 @@ import (
 
 var GormDB *gorm.DB
 
-func InitDatabase(connectionString string) error {
+func InitGORM(connectionString string) error {
 	var err error
 	GormDB, err = gorm.Open(postgres.Open(connectionString), &gorm.Config{})
 	if err != nil {
