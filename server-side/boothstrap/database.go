@@ -20,5 +20,11 @@ func InitDatabase() (err error) {
 	if err != nil {
 		return err
 	}
+	err = repository.InitKeywordRepository()
+	if err != nil {
+		return err
+	}
+	repository.InitSearchResultRepository()
+	repository.InitPageDataRepository()
 	return nil
 }
