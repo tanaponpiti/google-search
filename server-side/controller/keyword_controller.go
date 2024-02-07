@@ -33,6 +33,14 @@ func AddKeyword(c *gin.Context) {
 	}
 	keywords := req.Keywords
 	jobList, err := service.AddKeyword(keywords)
+	keywordList := make([]string, len(jobList))
+	for i, kw := range jobList {
+		keywordList[i] = kw.KeywordText
+	}
+	if len(keywordList) > 0 {
+		service.ScrapeFromGoogleSearch(keywordList)
+		//
+	}
 	complete := response.HandleErrorResponse(err, c)
 	if complete {
 		return

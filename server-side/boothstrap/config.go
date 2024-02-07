@@ -19,7 +19,7 @@ func LoadConfig() error {
 		}
 	}
 	viper.AutomaticEnv()
-	requiredKeys := []string{"DB_URI", "JWT_SECRET", "REDIS_URI"}
+	requiredKeys := []string{"DB_URI", "JWT_SECRET", "REDIS_URI", "CLOUD_RUN_URL", "CLOUD_RUN_KEY_PATH"}
 	for _, key := range requiredKeys {
 		if !viper.IsSet(key) {
 			log.Fatal("Required key %s not set in environment", key)
