@@ -38,6 +38,9 @@ func cleanUp(keywords []string) []string {
 }
 
 func AddKeyword(keywords []string) ([]model.Keyword, error) {
+	if len(keywords) > 100 {
+		return nil, response.NewErrorResponse("cannot add keyword more than 100 keywords at a time", http.StatusInternalServerError)
+	}
 	jobList, err := repository.KeywordRepositoryInstance.CreateKeywordJob(cleanUp(keywords))
 	if err != nil {
 		log.Error(err)
