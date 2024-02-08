@@ -22,9 +22,10 @@ type KeywordFilter struct {
 }
 
 type KeywordScrapeResult struct {
-	Keyword string
-	RawHTML string
-	Error   error
+	Keyword    string
+	RawHTML    string
+	SearchDate time.Time
+	Error      error
 	ExtractedMetadata
 }
 

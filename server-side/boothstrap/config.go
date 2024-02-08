@@ -13,6 +13,7 @@ func LoadConfig() error {
 	viper.SetDefault("REDIS_PASSWORD", "")
 	viper.SetDefault("REDIS_DB", "0")
 	viper.SetDefault("REDIS_CONNECTION_POOL", "100")
+	viper.SetDefault("CONCURRENT_SCRAPE_LIMIT", "3")
 	if os.Getenv("APP_MODE") != "production" {
 		if err := godotenv.Load(); err != nil {
 			return err

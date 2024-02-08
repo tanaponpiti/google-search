@@ -14,5 +14,6 @@ func Init() (err error) {
 	if err != nil {
 		return err
 	}
+	InitScraper()
 	return nil
 }

@@ -1,11 +1,15 @@
 package service
 
 import (
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"server-side/boothstrap"
 	"server-side/model"
 	"server-side/repository"
 	"server-side/response"
+	"strings"
+	"time"
 )
 
 func GetKeywordPage(pageRequest model.PaginationRequest[model.KeywordFilter]) (*model.PageResponse[model.KeywordFilter, model.Keyword], error) {
@@ -18,11 +22,97 @@ func GetKeywordPage(pageRequest model.PaginationRequest[model.KeywordFilter]) (*
 	return &pageResponse, nil
 }
 
+func cleanUp(keywords []string) []string {
+	keywordMap := make(map[string]bool)
+	var cleanedKeywords []string
+
+	for _, keyword := range keywords {
+		lowerKeyword := strings.ToLower(keyword)
+		if _, exists := keywordMap[lowerKeyword]; !exists {
+			keywordMap[lowerKeyword] = true
+			cleanedKeywords = append(cleanedKeywords, lowerKeyword)
+		}
+	}
+
+	return cleanedKeywords
+}
+
 func AddKeyword(keywords []string) ([]model.Keyword, error) {
-	jobList, err := repository.KeywordRepositoryInstance.CreateKeywordJob(keywords)
+	jobList, err := repository.KeywordRepositoryInstance.CreateKeywordJob(cleanUp(keywords))
 	if err != nil {
 		log.Error(err)
 		return nil, response.NewErrorResponse("unable to create keyword", http.StatusInternalServerError)
 	}
 	return jobList, nil
+}
+
+func ScrapeFromGoogleSearch(keywords []string) ([]model.Keyword, error) {
+	tobeScrapeList, err := AddKeyword(keywords)
+	if err != nil {
+		return nil, err
+	}
+	keywordList := make([]string, len(tobeScrapeList))
+	for i, kw := range tobeScrapeList {
+		keywordList[i] = kw.KeywordText
+	}
+	if len(keywordList) > 0 {
+		go func() {
+			scrapeResultsChan, wg := boothstrap.ScraperInstance.ScrapeFromGoogleSearch(keywords)
+			go func() {
+				wg.Wait()
+				close(scrapeResultsChan)
+			}()
+
+			keywordsSearchResultMap := make(map[string]*model.SearchResult)
+			for _, kw := range tobeScrapeList {
+				if len(kw.SearchResults) > 0 {
+					searchResult := kw.SearchResults[0]
+					if searchResult.Status == model.Pending || searchResult.Status == model.Failed {
+						keywordsSearchResultMap[kw.KeywordText] = &searchResult
+					} else {
+						log.Warning(fmt.Sprintf("Found non Pending/Failed search result in search result. Skip updating search result with id %s"), searchResult.ID)
+					}
+				}
+			}
+			for scrapeResult := range scrapeResultsChan {
+				if searchResult, found := keywordsSearchResultMap[scrapeResult.Keyword]; found {
+					if scrapeResult.Error == nil {
+						searchResult.Status = model.Completed
+						searchResult.TotalResults = scrapeResult.TotalResults
+						searchResult.AdWordsCount = scrapeResult.AdWordsCount
+						searchResult.TotalLinks = scrapeResult.TotalLinks
+						searchResult.SearchDate = &scrapeResult.SearchDate
+						searchResult.PageData = &model.PageData{
+							SearchResultID: searchResult.ID,
+							HtmlData:       scrapeResult.RawHTML,
+						}
+					} else {
+						searchResult.Status = model.Failed
+						searchResult.SearchDate = &scrapeResult.SearchDate
+					}
+					//Update each search result separately
+					//Update in loop is not friendly to database, but it provides realtime update to search request data for user.
+					//This can also be change to bulk update later as well if we want to wait for every keyword to complete
+					_, err := repository.SearchResultRepositoryInstance.Update(searchResult)
+					if err != nil {
+						log.Error("unable to update search result", err)
+					}
+				}
+			}
+			currentTime := time.Now()
+			failedSearchResult := make([]*model.SearchResult, 0)
+			for _, searchResult := range keywordsSearchResultMap {
+				if searchResult.Status == model.Pending {
+					searchResult.Status = model.Failed
+					searchResult.SearchDate = &currentTime
+					failedSearchResult = append(failedSearchResult, searchResult)
+				}
+			}
+			_, err := repository.SearchResultRepositoryInstance.BulkUpdate(failedSearchResult)
+			if err != nil {
+				log.Error("unable to update search result", err)
+			}
+		}()
+	}
+	return tobeScrapeList, nil
 }
