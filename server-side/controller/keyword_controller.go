@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/csv"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"server-side/model"
@@ -32,6 +33,45 @@ func AddKeyword(c *gin.Context) {
 		return
 	}
 	keywords := req.Keywords
+	search, err := service.ScrapeFromGoogleSearch(keywords)
+	complete := response.HandleErrorResponse(err, c)
+	if complete {
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": search})
+}
+
+func AddKeywordFromCSV(c *gin.Context) {
+	// The maximum file size is set to 2MB
+	const maxFileSize = 2 << 20 // 2 MB
+	fileHeader, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid file"})
+		return
+	}
+	if fileHeader.Size > maxFileSize {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "File size should not exceed 2MB"})
+		return
+	}
+	file, err := fileHeader.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error opening file"})
+		return
+	}
+	defer file.Close()
+
+	csvReader := csv.NewReader(file)
+	records, err := csvReader.ReadAll()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Error reading CSV file"})
+		return
+	}
+
+	// Assuming each record contains a single keyword, and the CSV does not have a header
+	var keywords []string
+	for _, record := range records {
+		keywords = append(keywords, record[0])
+	}
 	search, err := service.ScrapeFromGoogleSearch(keywords)
 	complete := response.HandleErrorResponse(err, c)
 	if complete {

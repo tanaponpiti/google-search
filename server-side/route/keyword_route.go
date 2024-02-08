@@ -10,4 +10,5 @@ func RegisterKeywordRoutes(rg *gin.RouterGroup) {
 	keywordGroup := rg.Group("/keyword", service.AuthMiddleware())
 	keywordGroup.POST("/", controller.AddKeyword)
 	keywordGroup.POST("/search", controller.GetKeywordPage)
+	keywordGroup.POST("/csv-upload", controller.AddKeywordFromCSV)
 }
