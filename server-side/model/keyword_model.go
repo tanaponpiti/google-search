@@ -20,3 +20,17 @@ type KeywordFilter struct {
 	KeywordSearch *string
 	Status        *[]SearchStatus
 }
+
+type KeywordScrapeResult struct {
+	Keyword    string
+	RawHTML    string
+	SearchDate time.Time
+	Error      error
+	ExtractedMetadata
+}
+
+type ExtractedMetadata struct {
+	AdWordsCount *int
+	TotalLinks   *int
+	TotalResults *string
+}

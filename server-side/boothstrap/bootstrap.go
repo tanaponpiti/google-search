@@ -10,5 +10,10 @@ func Init() (err error) {
 	if err != nil {
 		return err
 	}
-	return err
+	err = InitConnector()
+	if err != nil {
+		return err
+	}
+	InitScraper()
+	return nil
 }
