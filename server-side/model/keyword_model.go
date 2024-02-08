@@ -18,7 +18,6 @@ type KeywordCreate struct {
 
 type KeywordFilter struct {
 	KeywordSearch *string
-	Status        *[]SearchStatus
 }
 
 type KeywordScrapeResult struct {

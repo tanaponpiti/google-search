@@ -113,20 +113,28 @@ func (r *KeywordRepository) GetFilteredKeywords(filter *model.KeywordFilter, pag
 		if filter.KeywordSearch != nil {
 			query = query.Where("keyword_text LIKE ?", *filter.KeywordSearch+"%")
 		}
-		if filter.Status != nil {
-			query = query.Joins("JOIN search_results ON search_results.keyword_id = keywords.id").
-				Where("search_results.status IN ?", filter.Status)
-		}
 	}
 
 	query = query.Order("updated_at DESC")
 	query = query.Offset((page - 1) * pageSize).Limit(pageSize)
 
-	err := query.Preload("SearchResults", func(db *gorm.DB) *gorm.DB {
-		return db.Order("search_results.updated_at DESC").Limit(5)
-	}).Find(&keywords).Error
+	err := query.Find(&keywords).Error
+	if err != nil {
+		return nil, err
+	}
 
-	return keywords, err
+	//preload SearchResults for each Keyword, limiting to 5 per Keyword
+	for i := range keywords {
+		err = r.db.Model(&keywords[i]).
+			Preload("SearchResults", func(db *gorm.DB) *gorm.DB {
+				return db.Order("search_results.updated_at DESC").Limit(5)
+			}).Find(&keywords[i]).Error
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return keywords, nil
 }
 
 func (r *KeywordRepository) FindByID(id uint) (*model.Keyword, error) {
