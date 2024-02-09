@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia';
-import { login as apiLogin,logout as apiLogout } from '@/services/auth.js';
-
+import {defineStore} from 'pinia';
+import router from '@/router';
+import {login as apiLogin, logout as apiLogout, getUserInfo as apiGetUserInfo} from '@/services/auth.js';
 export const useAuthStore = defineStore('auth', {
     state: () => ({
         token: null,
@@ -8,6 +8,9 @@ export const useAuthStore = defineStore('auth', {
     getters: {
         isAuthenticated(state) {
             return !!state.token;
+        },
+        getToken(state) {
+            return state.token;
         }
     },
     actions: {
@@ -15,10 +18,20 @@ export const useAuthStore = defineStore('auth', {
             this.token = newToken;
             localStorage.setItem('userToken', newToken);
         },
-        loadToken() {
+        async loadToken() {
             const storedToken = localStorage.getItem('userToken');
             if (storedToken) {
                 this.token = storedToken;
+            }
+        },
+        async checkTokeValidity() {
+            if (this.token) {
+                try {
+                    await apiGetUserInfo(this.token)
+                } catch (e) {
+                    localStorage.removeItem('userToken');
+                    this.token = null;
+                }
             }
         },
         async login(username, password) {
@@ -35,8 +48,17 @@ export const useAuthStore = defineStore('auth', {
                 console.error('Logout failed:', error);
             }
         },
-        initialize() {
-            this.loadToken();
+        async forceLogout() {
+            try {
+                await this.logout()
+            } catch (error) {
+                console.error('Logout failed:', error);
+            } finally {
+                await router.push({name: 'Sign in'})
+            }
+        },
+        async initialize() {
+            await this.loadToken();
         }
     }
 });

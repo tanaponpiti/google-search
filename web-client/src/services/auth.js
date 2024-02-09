@@ -40,3 +40,21 @@ export async function logout(token) {
     }
 }
 
+/**
+ * Send a GET request to retrieve user information from the backend.
+ * @param {String} token User's token
+ * @returns {Promise<Object>} The response from the server, containing user information.
+ */
+export async function getUserInfo(token) {
+    try {
+        const response = await axios.get(`${API_URI}/api/auth/me`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Get user info error:", error.response ? `${error.response.status} ${error.response.statusText}` : error);
+        throw error; // Rethrow to allow caller to handle
+    }
+}
