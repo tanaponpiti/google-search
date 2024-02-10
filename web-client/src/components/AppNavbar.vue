@@ -1,8 +1,8 @@
 <template>
   <fwb-navbar>
     <template #logo>
-      <a href="https://flowbite.com/" class="flex items-center space-x-3 rtl:space-x-reverse">
-        <img src="@/assets/images/logo.png" class="h-8" alt="Flowbite Logo" />
+      <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
+        <img src="@/assets/images/logo.png" class="h-8" alt="Search Scraper Logo" />
         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Search Scraper</span>
       </a>
     </template>
