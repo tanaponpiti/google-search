@@ -1,6 +1,7 @@
 import axios from 'axios';
 import {API_URI} from "@/config/config.js";
 import {useAuthStore} from "@/stores/auth.js";
+import {showToast} from "@/utility/toast.js";
 
 /**
  * Send a login request to the backend.
@@ -27,8 +28,10 @@ export async function getKeywordPage(page, pageSize = 10, keywordSearch = null) 
         return response.data;
     } catch (error) {
         if (error.response && error.response.status === 401) {
+            showToast.warning("Session expire");
             await authStore.forceLogout();
         } else {
+            showToast.error("Unable to get keyword results");
             console.error("Get keyword page error:", error.response ? `${error.response.status} ${error.response.statusText}` : error);
             throw error; // Rethrow to allow caller to handle
         }
@@ -57,6 +60,7 @@ export async function addKeywords(keywords) {
         if (error.response && error.response.status === 401) {
             await authStore.forceLogout();
         } else {
+            showToast.error("Unable to add keyword");
             console.error("Add keywords error:", error.response ? `${error.response.status} ${error.response.statusText}` : error);
             throw error; // Rethrow to allow caller to handle
         }
@@ -84,6 +88,7 @@ export async function uploadCsv(file) {
         if (error.response && error.response.status === 401) {
             await authStore.forceLogout();
         } else {
+            showToast.error("Unable to upload csv");
             console.error("CSV upload error:", error.response ? `${error.response.status} ${error.response.statusText}` : error);
             throw error; // Rethrow to allow caller to handle
         }
