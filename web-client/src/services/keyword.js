@@ -2,6 +2,7 @@ import axios from 'axios';
 const API_URI = window.apiBaseUrl;
 import {useAuthStore} from "@/stores/auth.js";
 import {showToast} from "@/utility/toast.js";
+import {saveAs} from 'file-saver';
 
 /**
  * Send a login request to the backend.
@@ -37,7 +38,6 @@ export async function getKeywordPage(page, pageSize = 10, keywordSearch = null) 
         }
     }
 }
-
 
 /**
  * Send keywords to the backend for processing.
@@ -92,5 +92,26 @@ export async function uploadCsv(file) {
             console.error("CSV upload error:", error.response ? `${error.response.status} ${error.response.statusText}` : error);
             throw error; // Rethrow to allow caller to handle
         }
+    }
+}
+
+/**
+ * Download HTML cache based on the searchResultId.
+ * @param {String} searchResultId The ID of the search result to download.
+ */
+export async function downloadHtmlCache(searchResultId) {
+    const authStore = useAuthStore();
+    try {
+        const response = await axios.get(`${API_URI}/api/keyword/download/${searchResultId}`, {
+            headers: {
+                'Authorization': `Bearer ${authStore.getToken}`,
+            },
+            responseType: 'blob',
+        });
+        const blob = new Blob([response.data], {type: 'text/html'});
+        saveAs(blob, `downloadedHtmlCache-${searchResultId}.html`);
+    } catch (error) {
+        console.error("Error downloading HTML cache:", error.response ? `${error.response.status} ${error.response.statusText}` : error);
+        throw error;
     }
 }
