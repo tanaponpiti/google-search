@@ -45,7 +45,6 @@
 </template>
 
 <script setup>
-import {defineProps} from 'vue';
 import {
   FwbA, FwbBadge, FwbSpinner,
   FwbTable,

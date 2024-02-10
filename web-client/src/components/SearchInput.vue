@@ -22,7 +22,7 @@
 </template>
 
 <script lang="ts" setup>
-import {defineProps, ref, watch} from 'vue'
+import {ref, watch} from 'vue'
 import {FwbButton, FwbInput} from 'flowbite-vue'
 
 const emit = defineEmits(['update:modelValue', 'search'])

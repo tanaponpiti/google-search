@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {API_URI} from "@/config/config.js";
+const API_URI = window.apiBaseUrl;
 
 /**
  * Send a login request to the backend.
