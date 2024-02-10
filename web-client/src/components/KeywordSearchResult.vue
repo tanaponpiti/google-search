@@ -25,7 +25,7 @@ import {showToast} from "@/utility/toast.js";
 
 const searchQuery = ref("");
 const loading = ref(false);
-const totalPage = ref(10)
+const totalPage = ref(1)
 const pageSize = ref(10)
 const currentPage = ref(1)
 const searchData = ref([])
@@ -71,6 +71,7 @@ const loadData = async () => {
     searchQuery.value = response.pagination?.filter?.KeywordSearch || "";
     pageSize.value = response.pagination?.pageSize || 10;
     currentPage.value = response.pagination?.page || 1;
+    totalPage.value = response.pagination?.totalPage || 1;
   } finally {
     loading.value = false
   }
