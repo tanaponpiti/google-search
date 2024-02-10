@@ -13,7 +13,7 @@ type IKeywordRepository interface {
 	Migrate() error
 	Create(keyword string) (*model.Keyword, error)
 	CreateKeywordJob(keywords []string) ([]model.Keyword, error)
-	GetFilteredKeywords(filter *model.KeywordFilter, page, pageSize int) ([]model.Keyword, error)
+	GetFilteredKeywords(filter *model.KeywordFilter, page, pageSize int) ([]model.Keyword, int64, error)
 	FindByID(id uint) (*model.Keyword, error)
 	Update(keyword *model.Keyword) (*model.Keyword, error)
 	Delete(id uint) error
@@ -106,7 +106,7 @@ func (r *KeywordRepository) CreateKeywordJob(keywords []string) ([]model.Keyword
 	return pendingKeyword, err
 }
 
-func (r *KeywordRepository) GetFilteredKeywords(filter *model.KeywordFilter, page, pageSize int) ([]model.Keyword, error) {
+func (r *KeywordRepository) GetFilteredKeywords(filter *model.KeywordFilter, page, pageSize int) ([]model.Keyword, int64, error) {
 	var keywords []model.Keyword
 	query := r.db.Model(&model.Keyword{})
 	if filter != nil {
@@ -114,27 +114,23 @@ func (r *KeywordRepository) GetFilteredKeywords(filter *model.KeywordFilter, pag
 			query = query.Where("keyword_text LIKE ?", *filter.KeywordSearch+"%")
 		}
 	}
-
-	query = query.Order("updated_at DESC")
-	query = query.Offset((page - 1) * pageSize).Limit(pageSize)
-
-	err := query.Find(&keywords).Error
-	if err != nil {
-		return nil, err
+	var totalMatched int64
+	if err := query.Count(&totalMatched).Error; err != nil {
+		return nil, 0, err
 	}
-
-	//preload SearchResults for each Keyword, limiting to 5 per Keyword
+	query = query.Order("updated_at DESC").Offset((page - 1) * pageSize).Limit(pageSize)
+	if err := query.Find(&keywords).Error; err != nil {
+		return nil, 0, err
+	}
 	for i := range keywords {
-		err = r.db.Model(&keywords[i]).
+		if err := r.db.Model(&keywords[i]).
 			Preload("SearchResults", func(db *gorm.DB) *gorm.DB {
 				return db.Order("search_results.updated_at DESC").Limit(5)
-			}).Find(&keywords[i]).Error
-		if err != nil {
-			return nil, err
+			}).Find(&keywords[i]).Error; err != nil {
+			return nil, 0, err
 		}
 	}
-
-	return keywords, nil
+	return keywords, totalMatched, nil
 }
 
 func (r *KeywordRepository) FindByID(id uint) (*model.Keyword, error) {

@@ -13,12 +13,13 @@ import (
 )
 
 func GetKeywordPage(pageRequest model.PaginationRequest[model.KeywordFilter]) (*model.PageResponse[model.KeywordFilter, model.Keyword], error) {
-	keyword, err := repository.KeywordRepositoryInstance.GetFilteredKeywords(pageRequest.Filter, pageRequest.Page, pageRequest.PageSize)
+	keyword, total, err := repository.KeywordRepositoryInstance.GetFilteredKeywords(pageRequest.Filter, pageRequest.Page, pageRequest.PageSize)
 	if err != nil {
 		log.Error(err)
 		return nil, response.NewErrorResponse("unable to search for keyword", http.StatusInternalServerError)
 	}
-	pageResponse := model.PageResponse[model.KeywordFilter, model.Keyword]{Pagination: pageRequest, Data: keyword}
+	pagination := model.CreatePaginationResponse(pageRequest, total)
+	pageResponse := model.PageResponse[model.KeywordFilter, model.Keyword]{Pagination: pagination, Data: keyword}
 	return &pageResponse, nil
 }
 
