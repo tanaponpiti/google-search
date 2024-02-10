@@ -7,6 +7,7 @@ import (
 	"server-side/model"
 	"server-side/response"
 	"server-side/service"
+	"strconv"
 )
 
 func GetKeywordPage(c *gin.Context) {
@@ -78,4 +79,24 @@ func AddKeywordFromCSV(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": search})
+}
+
+func DownloadKeywordHTMLCache(c *gin.Context) {
+	searchResultID := c.Param("searchResultID")
+	var id uint
+	var err error
+	if parsedID, errParse := strconv.ParseUint(searchResultID, 10, 32); errParse == nil {
+		id = uint(parsedID)
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid search result ID"})
+		return
+	}
+	pageData, err := service.GetSearchResultHTMLCache(id)
+	complete := response.HandleErrorResponse(err, c)
+	if complete {
+		return
+	}
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Disposition", "attachment; filename=\"keyword-cache.html\"")
+	c.String(http.StatusOK, *pageData)
 }

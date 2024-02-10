@@ -11,4 +11,5 @@ func RegisterKeywordRoutes(rg *gin.RouterGroup) {
 	keywordGroup.POST("/", controller.AddKeyword)
 	keywordGroup.POST("/search", controller.GetKeywordPage)
 	keywordGroup.POST("/csv-upload", controller.AddKeywordFromCSV)
+	keywordGroup.GET("/download/:searchResultID", controller.DownloadKeywordHTMLCache)
 }

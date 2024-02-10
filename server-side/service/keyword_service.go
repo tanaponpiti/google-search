@@ -119,3 +119,14 @@ func ScrapeFromGoogleSearch(keywords []string) ([]model.Keyword, error) {
 	}
 	return tobeScrapeList, nil
 }
+
+func GetSearchResultHTMLCache(searchResultId uint) (*string, error) {
+	result, err := repository.PageDataRepositoryInstance.FindBySearchResultID(searchResultId)
+	if err != nil {
+		return nil, response.NewErrorResponse("unable to find page data of given search result id", http.StatusInternalServerError)
+	}
+	if result == nil {
+		return nil, response.NewErrorResponse("unable to find page data of given search result id", http.StatusNotFound)
+	}
+	return &result.HtmlData, nil
+}
