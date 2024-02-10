@@ -1,8 +1,11 @@
 package controller
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"net/http"
+	"server-side/boothstrap"
 	"server-side/model"
 	"server-side/response"
 	"server-side/service"
@@ -44,7 +47,27 @@ func SignUp(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
-	_, err := service.SignUp(userCreate)
+	err := boothstrap.Validate.Struct(userCreate)
+	if err != nil {
+		var invalidValidationError *validator.InvalidValidationError
+		if errors.As(err, &invalidValidationError) {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
+
+		// Construct a detailed error response
+		errorList := make(map[string]string)
+		for _, err := range err.(validator.ValidationErrors) {
+			field := err.StructNamespace() // or err.Field() for just the field name
+			tag := err.Tag()
+			errorList[field] = "Validation failed on the " + tag + " tag"
+		}
+
+		// Return the validation errors
+		c.JSON(http.StatusBadRequest, gin.H{"errors": errorList})
+		return
+	}
+	_, err = service.SignUp(userCreate)
 	complete := response.HandleErrorResponse(err, c)
 	if complete {
 		return
