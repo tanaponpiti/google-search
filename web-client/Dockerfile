@@ -18,7 +18,7 @@ COPY envsubst.sh /docker-entrypoint.d/envsubst.sh
 RUN chmod +x /docker-entrypoint.d/envsubst.sh
 
 # Replace default Nginx configuration to handle SPA routing
-RUN rm /etc/nginx/conf.d/default.confn
+RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/conf.d
 
 EXPOSE 80
