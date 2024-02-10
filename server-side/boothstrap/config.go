@@ -1,6 +1,7 @@
 package boothstrap
 
 import (
+	"fmt"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -14,7 +15,7 @@ func LoadConfig() error {
 	viper.SetDefault("REDIS_DB", "0")
 	viper.SetDefault("REDIS_CONNECTION_POOL", "100")
 	viper.SetDefault("CONCURRENT_SCRAPE_LIMIT", "3")
-	if os.Getenv("APP_MODE") != "production" {
+	if os.Getenv("GIN_MODE") != "release" {
 		if err := godotenv.Load(); err != nil {
 			return err
 		}
@@ -23,7 +24,7 @@ func LoadConfig() error {
 	requiredKeys := []string{"DB_URI", "JWT_SECRET", "REDIS_URI", "CLOUD_RUN_URL", "CLOUD_RUN_KEY_PATH"}
 	for _, key := range requiredKeys {
 		if !viper.IsSet(key) {
-			log.Fatal("Required key %s not set in environment", key)
+			log.Fatal(fmt.Sprintf("Required key %s not set in environment", key))
 			os.Exit(-1)
 		}
 	}
