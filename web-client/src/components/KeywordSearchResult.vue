@@ -19,7 +19,7 @@ import {onMounted, ref} from 'vue'
 import SearchResultTable from "@/components/SearchResultTable.vue";
 import SearchInput from "@/components/SearchInput.vue";
 import {FwbCard, FwbPagination} from "flowbite-vue";
-import {getKeywordPage, uploadCsv} from "@/services/keyword.js";
+import {downloadHtmlCache, getKeywordPage, uploadCsv} from "@/services/keyword.js";
 import FileInput from "@/components/FileInput.vue";
 import {showToast} from "@/utility/toast.js";
 
@@ -52,8 +52,15 @@ const onUpload = async (file) => {
   }
 }
 
-const onDownload = (searchResultId) => {
-  console.log(searchResultId)
+const onDownload = async (searchResultId) => {
+  try {
+    loading.value = true;
+    await downloadHtmlCache(searchResultId)
+  } catch (e) {
+    showToast.success("Unable to download html cache");
+  } finally {
+    loading.value = false
+  }
 }
 
 const loadData = async () => {
