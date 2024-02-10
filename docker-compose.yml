@@ -1,14 +1,61 @@
 version: '3.8'
 
 services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    restart: unless-stopped
+    depends_on:
+      - web
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - search_scraper_network
+  web:
+    image: ghcr.io/tanaponpiti/search-scraper-web-client:1.0.0-amd64
+    restart: unless-stopped
+    networks:
+      - search_scraper_network
+    environment:
+      VIRTUAL_HOST: "localhost"
+      VIRTUAL_PORT: "80"
+      VIRTUAL_PATH: "/"
+      API_URL: "http://localhost"
+  api:
+    image: ghcr.io/tanaponpiti/search-scraper-api:1.0.0-amd64
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      VIRTUAL_HOST: "localhost"
+      VIRTUAL_PORT: "8080"
+      VIRTUAL_PATH: "/api"
+      DB_URI: 'host=postgres user=googlesearchuser password=Dg99A617r4Mm dbname=googlesearch port=5432 sslmode=disable TimeZone=Asia/Bangkok'
+      JWT_SECRET: 'RRUmXiSh#vyRh$#:21l99Wt@3'
+      REDIS_URI: 'redis:6379'
+      REDIS_PASSWORD: 'LRR3SpEIH7EX1x2bZoi3'
+      REDIS_DB: 0
+      REDIS_CONNECTION_POOL: 100
+      TOKEN_EXPIRE_HOUR: 24
+      CLOUD_RUN_URL: 'https://html-retriever-2x7ioak5xa-as.a.run.app'
+      CLOUD_RUN_KEY_PATH: '/app/key.json'
+    volumes:
+      - /Users/perthpiti/Downloads/nimble-assignment-b4966d8eedc1.json:/app/key.json # Ensure the local path to your key file is correct
+    networks:
+      - search_scraper_network
   redis:
     image: redis:7.2.4
-    restart: always
-    ports:
-      - "6379:6379"
+    restart: unless-stopped
     command: redis-server --requirepass LRR3SpEIH7EX1x2bZoi3
+    networks:
+      - search_scraper_network
   postgres:
     image: postgres:12.17-bullseye
+    restart: unless-stopped
     environment:
       POSTGRES_DB: googlesearch
       POSTGRES_USER: googlesearchuser
@@ -17,6 +64,13 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    networks:
+      - search_scraper_network
 
 volumes:
   postgres_data:
+
+networks:
+  search_scraper_network:
+    name: search_scraper_network
+    driver: bridge
