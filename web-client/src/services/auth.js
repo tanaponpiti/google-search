@@ -58,3 +58,28 @@ export async function getUserInfo(token) {
         throw error; // Rethrow to allow caller to handle
     }
 }
+
+/**
+ * Send a signup request to the backend.
+ * @param {String} username User's username
+ * @param {String} password User's password
+ * @param {String} name User's name
+ * @returns {Promise<Object>} The response from the server, including user data if successful.
+ */
+export async function signUp(username, password, name) {
+    try {
+        const response = await axios.post(`${API_URI}/api/auth/signup`, {
+            username,
+            password,
+            name
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Signup error:", error.response ? `${error.response.status} ${error.response.statusText}` : error);
+        throw error; // Rethrow to allow caller to handle
+    }
+}

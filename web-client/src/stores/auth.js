@@ -1,6 +1,12 @@
 import {defineStore} from 'pinia';
 import router from '@/router';
-import {login as apiLogin, logout as apiLogout, getUserInfo as apiGetUserInfo} from '@/services/auth.js';
+import {
+    login as apiLogin,
+    logout as apiLogout,
+    getUserInfo as apiGetUserInfo,
+    signUp as apiSignUp
+} from '@/services/auth.js';
+
 export const useAuthStore = defineStore('auth', {
     state: () => ({
         token: null,
@@ -37,7 +43,6 @@ export const useAuthStore = defineStore('auth', {
         async login(username, password) {
             const data = await apiLogin(username, password);
             this.saveToken(data.token); // Save token
-            console.log("Login successful, token stored.");
         },
         async logout() {
             try {
@@ -46,6 +51,15 @@ export const useAuthStore = defineStore('auth', {
                 this.token = null;
             } catch (error) {
                 console.error('Logout failed:', error);
+            }
+        },
+        async signupUser(username, password, name) {
+            try {
+                const userData = await apiSignUp(username, password, name);
+                return userData;
+            } catch (error) {
+                console.error('Signup error in store:', error);
+                throw error;
             }
         },
         async forceLogout() {
