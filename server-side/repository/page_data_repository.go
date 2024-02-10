@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"gorm.io/gorm"
 	"server-side/database"
 	"server-side/model"
@@ -11,6 +12,7 @@ type IPageDataRepository interface {
 	FindByID(id uint) (*model.PageData, error)
 	Update(pageData *model.PageData) (*model.PageData, error)
 	Delete(id uint) error
+	FindBySearchResultID(searchResultID uint) (*model.PageData, error)
 }
 
 var PageDataRepositoryInstance IPageDataRepository
@@ -54,4 +56,16 @@ func (r *PageDataRepository) Delete(id uint) error {
 		return err
 	}
 	return nil
+}
+
+func (r *PageDataRepository) FindBySearchResultID(searchResultID uint) (*model.PageData, error) {
+	var pageData model.PageData
+	if err := r.db.Where("search_result_id = ?", searchResultID).First(&pageData).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		} else if err != nil {
+			return nil, err
+		}
+	}
+	return &pageData, nil
 }
