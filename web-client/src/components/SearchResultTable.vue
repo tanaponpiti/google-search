@@ -22,7 +22,7 @@
             </fwb-badge>
           </fwb-table-cell>
           <fwb-table-cell>
-            <div class="flex justify-center items-center">
+            <div v-if="data.SearchResults[0]?.Status === 'COMPLETED'" class="flex justify-center items-center">
               <fwb-a href="#" @click="download(data.SearchResults[0]?.ID)">
                 <FontAwesomeIcon :icon="faDownload"/>
               </fwb-a>

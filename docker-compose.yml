@@ -62,8 +62,6 @@ services:
       POSTGRES_PASSWORD: Dg99A617r4Mm
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     networks:
       - search_scraper_network
 

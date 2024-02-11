@@ -15,5 +15,6 @@ func Init() (err error) {
 		return err
 	}
 	InitScraper()
+	InitValidator()
 	return nil
 }

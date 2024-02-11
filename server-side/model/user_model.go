@@ -14,10 +14,9 @@ type User struct {
 }
 
 type UserCreate struct {
-	Username string `json:"username" binding:"required"`
-	//TODO add password required format
-	Password string `json:"password" binding:"required"`
-	Name     string `json:"name" binding:"required"`
+	Username string `json:"username" validate:"required,username"`
+	Password string `json:"password" validate:"required,password"`
+	Name     string `json:"name" validate:"required"`
 }
 
 type UserUpdate struct {

@@ -71,11 +71,11 @@ const isSignUpMode = ref(false);
 const errorMessage = ref("");
 const passwordPatternError = ref(false);
 const usernamePatternError = ref(false);
-const passwordPatternErrorMessage = "Password must be at least 8 characters long and include a mix of letters, numbers, and special characters.";
+const passwordPatternErrorMessage = "Password must be at least 8 characters long must include a mix of letters, numbers, and special characters.";
 const usernamePatternErrorMessage = "Username must be 3-16 characters long and can contain letters, numbers, and underscores.";
 
 const usernamePattern = /^[a-zA-Z0-9_]{3,16}$/;
-const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+const passwordPattern = /^[a-zA-Z0-9!@#$%^&*()_+={}\[\]:;"'<>,.?\/~-]{8,}$/;
 
 async function formSubmit() {
   errorMessage.value = "";
