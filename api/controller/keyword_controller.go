@@ -34,7 +34,7 @@ func AddKeyword(c *gin.Context) {
 		return
 	}
 	keywords := req.Keywords
-	search, err := service.ScrapeFromGoogleSearch(keywords)
+	search, err := service.ScrapeFromGoogleSearch(keywords, nil)
 	complete := response.HandleErrorResponse(err, c)
 	if complete {
 		return
@@ -73,7 +73,7 @@ func AddKeywordFromCSV(c *gin.Context) {
 	for _, record := range records {
 		keywords = append(keywords, record[0])
 	}
-	search, err := service.ScrapeFromGoogleSearch(keywords)
+	search, err := service.ScrapeFromGoogleSearch(keywords, nil)
 	complete := response.HandleErrorResponse(err, c)
 	if complete {
 		return
