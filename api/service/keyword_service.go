@@ -8,6 +8,7 @@ import (
 	"server-side/model"
 	"server-side/repository"
 	"server-side/response"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -74,7 +75,7 @@ func ScrapeFromGoogleSearch(keywords []string) ([]model.Keyword, error) {
 					if searchResult.Status == model.Pending || searchResult.Status == model.Failed {
 						keywordsSearchResultMap[kw.KeywordText] = &searchResult
 					} else {
-						log.Warning(fmt.Sprintf("Found non Pending/Failed search result in search result. Skip updating search result with id %s"), searchResult.ID)
+						log.Warning(fmt.Sprintf("Found non Pending/Failed search result in search result. Skip updating search result with id %s", strconv.Itoa(int(searchResult.ID))))
 					}
 				}
 			}
