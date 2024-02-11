@@ -43,6 +43,7 @@ services:
       TOKEN_EXPIRE_HOUR: 24
       HTML_RETRIEVER_STANDALONE: true
       HTML_RETRIEVER_URL: 'http://html-retriever:8081'
+      CONCURRENT_SCRAPE_LIMIT: 3
     networks:
       - search_scraper_network
   redis:
