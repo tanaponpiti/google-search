@@ -41,11 +41,8 @@ services:
       REDIS_DB: 0
       REDIS_CONNECTION_POOL: 100
       TOKEN_EXPIRE_HOUR: 24
-      HTML_RETRIEVER_STANDALONE: false
-      HTML_RETRIEVER_URL: 'https://html-retriever-2x7ioak5xa-as.a.run.app'
-      CLOUD_RUN_KEY_PATH: '/app/key.json'
-    volumes:
-      - /Users/perthpiti/Downloads/nimble-assignment-b4966d8eedc1.json:/app/key.json # Ensure the local path to your key file is correct
+      HTML_RETRIEVER_STANDALONE: true
+      HTML_RETRIEVER_URL: 'http://html-retriever:8081'
     networks:
       - search_scraper_network
   redis:
@@ -65,7 +62,13 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - search_scraper_network
-
+  html-retriever:
+    image: ghcr.io/tanaponpiti/html-retriever:1.0.0-amd64
+    restart: unless-stopped
+    environment:
+      HTML_RETRIEVER_STANDALONE: true
+    networks:
+      - search_scraper_network
 volumes:
   postgres_data:
 

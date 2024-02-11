@@ -1,6 +1,7 @@
 package boothstrap
 
 import (
+	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/spf13/viper"
@@ -39,6 +40,12 @@ func ExtractInformation(htmlContent string) (*model.ExtractedMetadata, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	isHtml := doc.Find("*").Length() > 0
+	if !isHtml {
+		return nil, errors.New("given content is not HTML")
+	}
+
 	// Find and count AdWords advertisers
 	advertisersCount := 0
 	doc.Find(`[aria-label="Ads"]`).Each(func(i int, s *goquery.Selection) {
@@ -77,7 +84,7 @@ func (s *Scraper) ScrapeFromGoogleSearch(keywords []string) (chan model.KeywordS
 			defer func() { <-s.semaphore }() // Release the slot when done.
 
 			searchUrl := generateSearchURL(keyword)
-			rawHTML, err := connector.CloudRunConnectorInstance.GetRenderedHTMLFromCloudRun(searchUrl)
+			rawHTML, err := connector.HTMLRetrieverConnectorInstance.GetRenderedHTML(searchUrl)
 			var information *model.ExtractedMetadata
 			var scrapeResult model.KeywordScrapeResult
 			currentTime := time.Now()

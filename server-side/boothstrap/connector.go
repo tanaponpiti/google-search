@@ -6,9 +6,18 @@ import (
 )
 
 func InitConnector() error {
-	err := connector.InitCloudRunConnector(viper.GetString("CLOUD_RUN_URL"), viper.GetString("CLOUD_RUN_KEY_PATH"))
-	if err != nil {
-		return err
+	isStandalone := viper.GetBool("HTML_RETRIEVER_STANDALONE")
+	if isStandalone {
+		err := connector.InitStandaloneConnector(viper.GetString("HTML_RETRIEVER_URL"))
+		if err != nil {
+			return err
+		}
+		return nil
+	} else {
+		err := connector.InitCloudRunConnector(viper.GetString("HTML_RETRIEVER_URL"), viper.GetString("CLOUD_RUN_KEY_PATH"))
+		if err != nil {
+			return err
+		}
+		return nil
 	}
-	return nil
 }
