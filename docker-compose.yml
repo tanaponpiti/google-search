@@ -44,8 +44,9 @@ services:
       HTML_RETRIEVER_STANDALONE: false
       HTML_RETRIEVER_URL: 'https://html-retriever-2x7ioak5xa-as.a.run.app'
       CLOUD_RUN_KEY_PATH: '/app/key.json'
+      CONCURRENT_SCRAPE_LIMIT: 3
     volumes:
-      - /Users/perthpiti/Downloads/nimble-assignment-b4966d8eedc1.json:/app/key.json # Ensure the local path to your key file is correct
+      - /path/to/your/key.json:/app/key.json # Ensure the local path to your key file is correct
     networks:
       - search_scraper_network
   redis:
