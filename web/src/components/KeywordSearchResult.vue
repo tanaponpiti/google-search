@@ -31,6 +31,7 @@ const currentPage = ref(1)
 const searchData = ref([])
 
 const onSearch = () => {
+  currentPage.value = 1;
   if (!loading.value) {
     loadData()
   }
