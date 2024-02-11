@@ -95,3 +95,16 @@ docker-compose up -d
 
 Replace `docker-compose.yml` with `standalone-docker-compose.yml` for local deployment.
 
+
+# TODO in the future
+## API
+- Add unit test for controller of API
+- Add more test scenario to reflect actual use case
+- Add startup service to continue scrape pending search result in case of unexpected shutdown of service
+- Add health check
+## WEB
+- Fix Login and Signup page to compatible with Safari and Google Chrome password keychain
+- Add polling request in keyword search result page to allow realtime update between web and api
+- Add backend for frontend instead of static file host on NGINX
+## HTML Retriever
+- Structure code into multiple file
