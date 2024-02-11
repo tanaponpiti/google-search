@@ -1,6 +1,7 @@
 const express = require('express');
 const puppeteer = require('puppeteer');
 const bodyParser = require('body-parser');
+const isStandalone = process.env.HTML_RETRIEVER_STANDALONE === 'true';
 
 puppeteer.launch({headless: true, args: ['--no-sandbox','--disable-features=site-per-process']}).then(browser => {
     const app = express();
@@ -10,9 +11,8 @@ puppeteer.launch({headless: true, args: ['--no-sandbox','--disable-features=site
     async function requestHtml(url) {
         const page = await browser.newPage();
 
-        // Listen for all responses. If any response has a 429 status code, terminate the program.
         page.on('response', async response => {
-            if (response.status() === 429) {
+            if (response.status() === 429 && !isStandalone) {
                 console.error('Error 429 encountered. Shutting down the server to reallocate new IP...');
                 await browser.close();
                 process.exit(1); // Terminate the program
@@ -36,6 +36,7 @@ puppeteer.launch({headless: true, args: ['--no-sandbox','--disable-features=site
             return res.status(400).json({error: 'URL is required'});
         }
         try {
+            console.log(`Response status for ${url}`);
             const htmlContent = await requestHtml(url);
             res.status(200).send(htmlContent);
         } catch (error) {

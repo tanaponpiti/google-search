@@ -15,13 +15,17 @@ func LoadConfig() error {
 	viper.SetDefault("REDIS_DB", "0")
 	viper.SetDefault("REDIS_CONNECTION_POOL", "100")
 	viper.SetDefault("CONCURRENT_SCRAPE_LIMIT", "3")
+	viper.SetDefault("HTML_RETRIEVER_STANDALONE", "true")
 	if os.Getenv("GIN_MODE") != "release" {
 		if err := godotenv.Load(); err != nil {
 			return err
 		}
 	}
 	viper.AutomaticEnv()
-	requiredKeys := []string{"DB_URI", "JWT_SECRET", "REDIS_URI", "CLOUD_RUN_URL", "CLOUD_RUN_KEY_PATH"}
+	requiredKeys := []string{"DB_URI", "JWT_SECRET", "REDIS_URI", "HTML_RETRIEVER_URL"}
+	if !viper.GetBool("HTML_RETRIEVER_STANDALONE") {
+		requiredKeys = append(requiredKeys, "CLOUD_RUN_KEY_PATH")
+	}
 	for _, key := range requiredKeys {
 		if !viper.IsSet(key) {
 			log.Fatal(fmt.Sprintf("Required key %s not set in environment", key))

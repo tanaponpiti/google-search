@@ -84,7 +84,7 @@ func (s *Scraper) ScrapeFromGoogleSearch(keywords []string) (chan model.KeywordS
 			defer func() { <-s.semaphore }() // Release the slot when done.
 
 			searchUrl := generateSearchURL(keyword)
-			rawHTML, err := connector.CloudRunConnectorInstance.GetRenderedHTMLFromCloudRun(searchUrl)
+			rawHTML, err := connector.HTMLRetrieverConnectorInstance.GetRenderedHTML(searchUrl)
 			var information *model.ExtractedMetadata
 			var scrapeResult model.KeywordScrapeResult
 			currentTime := time.Now()
