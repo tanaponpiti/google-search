@@ -8,7 +8,9 @@ import (
 	"server-side/model"
 	"server-side/repository"
 	"server-side/response"
+	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -50,7 +52,7 @@ func AddKeyword(keywords []string) ([]model.Keyword, error) {
 	return jobList, nil
 }
 
-func ScrapeFromGoogleSearch(keywords []string) ([]model.Keyword, error) {
+func ScrapeFromGoogleSearch(keywords []string, externalWg *sync.WaitGroup) ([]model.Keyword, error) {
 	tobeScrapeList, err := AddKeyword(keywords)
 	if err != nil {
 		return nil, err
@@ -60,7 +62,15 @@ func ScrapeFromGoogleSearch(keywords []string) ([]model.Keyword, error) {
 		keywordList[i] = kw.KeywordText
 	}
 	if len(keywordList) > 0 {
+		if externalWg != nil {
+			externalWg.Add(1) // Indicate that we have a goroutine to wait for.
+		}
 		go func() {
+			defer func() {
+				if externalWg != nil {
+					externalWg.Done() // Indicate that this goroutine is done.
+				}
+			}()
 			scrapeResultsChan, wg := boothstrap.ScraperInstance.ScrapeFromGoogleSearch(keywords)
 			go func() {
 				wg.Wait()
@@ -74,7 +84,7 @@ func ScrapeFromGoogleSearch(keywords []string) ([]model.Keyword, error) {
 					if searchResult.Status == model.Pending || searchResult.Status == model.Failed {
 						keywordsSearchResultMap[kw.KeywordText] = &searchResult
 					} else {
-						log.Warning(fmt.Sprintf("Found non Pending/Failed search result in search result. Skip updating search result with id %s"), searchResult.ID)
+						log.Warning(fmt.Sprintf("Found non Pending/Failed search result in search result. Skip updating search result with id %s", strconv.Itoa(int(searchResult.ID))))
 					}
 				}
 			}
